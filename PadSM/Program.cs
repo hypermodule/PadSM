@@ -106,12 +106,12 @@ public class Program
         var uasset = ByteAsset.Read(uassetPath);
         var uexp = ByteAsset.Read(uexpPath);
 
-        var (uasset1, uexp1) = PadStaticMesh(uasset, uexp);
+        var (newUasset, newUexp) = PadStaticMesh(uasset, uexp);
 
         var outputDir = Path.Join(Path.GetDirectoryName(uassetPath), "out");
         Directory.CreateDirectory(outputDir);
         
-        File.WriteAllBytes(Path.Join(outputDir, Path.GetFileName(uassetPath)), uasset1.Bytes);
-        File.WriteAllBytes(Path.Join(outputDir, Path.GetFileName(uexpPath)), uexp1.Bytes);
+        File.WriteAllBytes(Path.Join(outputDir, Path.GetFileName(uassetPath)), newUasset.Bytes);
+        File.WriteAllBytes(Path.Join(outputDir, Path.GetFileName(uexpPath)), newUexp.Bytes);
     }
 }
