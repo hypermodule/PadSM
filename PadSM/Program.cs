@@ -107,11 +107,11 @@ public class Program
         var uexp = ByteAsset.Read(uexpPath);
 
         var (newUasset, newUexp) = PadStaticMesh(uasset, uexp);
-
-        var outputDir = Path.Join(Path.GetDirectoryName(uassetPath), "out");
-        Directory.CreateDirectory(outputDir);
         
-        File.WriteAllBytes(Path.Join(outputDir, Path.GetFileName(uassetPath)), newUasset.Bytes);
-        File.WriteAllBytes(Path.Join(outputDir, Path.GetFileName(uexpPath)), newUexp.Bytes);
+        File.Move(uassetPath, Path.ChangeExtension(uassetPath, ".uasset.bak"));
+        File.Move(uexpPath, Path.ChangeExtension(uexpPath, ".uexp.bak"));
+        
+        File.WriteAllBytes(uassetPath, newUasset.Bytes);
+        File.WriteAllBytes(uexpPath, newUexp.Bytes);
     }
 }
