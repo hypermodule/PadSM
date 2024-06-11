@@ -6,6 +6,12 @@ Specifically, the script modifies the .uexp file by inserting the extra bytes th
 in each FStaticMeshSection, and then the script updates the export sizes/offsets accordingly
 in the .uasset file.
 
+## Requirements
+
+PadSM requires you to have **.NET 8.0 or later installed**. If you don't already have it, you
+can [download it here](https://dotnet.microsoft.com/en-us/download/dotnet/8.0/runtime)
+(select the **Windows Desktop x64** version).
+
 ## Usage
 
 ```
