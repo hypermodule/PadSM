@@ -5,11 +5,12 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>0.0.1</Version>
+        <Version>0.0.2</Version>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\CUE4Parse\CUE4Parse\CUE4Parse.csproj" />
+      <None Remove="GenericUE5_4.usmap" />
+      <EmbeddedResource Include="GenericUE5_4.usmap" />
     </ItemGroup>
 
 </Project>
