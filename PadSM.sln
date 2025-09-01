@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PadSM", "PadSM\PadSM.csproj", "{95EB2555-EC8D-4479-8D00-4DE7A5C2BBBD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUE4Parse", "CUE4Parse\CUE4Parse.csproj", "{0991424B-8AE5-4818-9BF8-0F7161B5920A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{95EB2555-EC8D-4479-8D00-4DE7A5C2BBBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95EB2555-EC8D-4479-8D00-4DE7A5C2BBBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95EB2555-EC8D-4479-8D00-4DE7A5C2BBBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0991424B-8AE5-4818-9BF8-0F7161B5920A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0991424B-8AE5-4818-9BF8-0F7161B5920A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0991424B-8AE5-4818-9BF8-0F7161B5920A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0991424B-8AE5-4818-9BF8-0F7161B5920A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

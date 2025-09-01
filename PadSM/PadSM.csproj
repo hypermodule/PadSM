@@ -13,4 +13,8 @@
       <EmbeddedResource Include="GenericUE5_4.usmap" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\CUE4Parse\CUE4Parse.csproj" />
+    </ItemGroup>
+
 </Project>

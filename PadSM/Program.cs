@@ -32,28 +32,31 @@ public class Program
         }
     }
 
-    private static TypeMappings GetUsmapForGrounded2()
+    private static IFileProvider GetUsmapFileProvider()
     {
         var assembly = Assembly.GetExecutingAssembly();
         using var stream = assembly.GetManifestResourceStream("PadSM.GenericUE5_4.usmap");
         using var memoryStream = new MemoryStream();
         stream!.CopyTo(memoryStream);
         var data = memoryStream.ToArray();
-        var parser = new UsmapParser(data);
-        return parser.Mappings!;
+        return new StreamedFileProvider("Grounded2", pathComparer: null)
+        {
+            MappingsContainer = new FileUsmapTypeMappingsProvider(data)
+        };
     }
 
-    private static Package ParseAsset(ByteAsset uasset, ByteAsset uexp)
+    private static (Package, EGame) ParseAsset(ByteAsset uasset, ByteAsset uexp)
     {
         try
         {
-            // Try parsing as Grounded asset
+            // Try parsing as Grounded 1 asset
             var versions = new VersionContainer(EGame.GAME_UE4_27);
             
             var uassetArchive = new FByteArchive(uasset.Name, uasset.Bytes, versions);
             var uexpArchive = new FByteArchive(uexp.Name, uexp.Bytes, versions);
 
-            return new Package(uassetArchive, uexpArchive, (FArchive?)null);
+            var package = new Package(uassetArchive, uexpArchive, (FArchive?)null);
+            return (package, EGame.GAME_Grounded);
         }
         catch (ParserException)
         {
@@ -62,30 +65,40 @@ public class Program
             
             var uassetArchive = new FByteArchive(uasset.Name, uasset.Bytes, versions);
             var uexpArchive = new FByteArchive(uexp.Name, uexp.Bytes, versions);
-            var usmap = GetUsmapForGrounded2();
-            
-            return new Package(uassetArchive, uexpArchive, (FArchive?)null, mappings: usmap, useLazySerialization: false);
+            var usmapProvider = GetUsmapFileProvider();
+
+            var package = new Package(uassetArchive, uexpArchive, (FArchive?)null, provider: usmapProvider);
+            return (package, EGame.GAME_Grounded2);
         }
     }
     
     private static (ByteAsset, ByteAsset) PadStaticMesh(ByteAsset uasset, ByteAsset uexp)
     {
-        var package = ParseAsset(uasset, uexp);
+        var (package, game) = ParseAsset(uasset, uexp);
+        
+        Console.WriteLine("game: " + game);
 
         // Find the StaticMesh export (main export)
-        var staticMeshExportIndex = -1;
-
-        for (var i = 0; i < package.ExportMap.Length; i++)
+        int staticMeshExportIndex = -1;
+        UStaticMesh? staticMesh = null;
+        
+        for (var i = 0; i < package.ExportMapLength; i++)
         {
-            if (package.ExportMap[i].ClassName == "StaticMesh")
+            var export = package.ExportsLazy[i].Value;
+            
+            if (export is UStaticMesh sm)
             {
                 staticMeshExportIndex = i;
+                staticMesh = sm;
             }
         }
 
-        var staticMesh = (UStaticMesh?)package.GetExport(staticMeshExportIndex);
+        if (staticMeshExportIndex == -1 || staticMesh == null)
+        {
+            throw new Exception("Could not find StaticMesh export");
+        }
 
-        // Find its StaticMeshSections
+        // Find the StaticMeshSections
         var staticMeshSections = new List<FStaticMeshSection>();
 
         foreach (var lod in staticMesh.RenderData.LODs)
@@ -93,14 +106,23 @@ public class Program
             staticMeshSections.AddRange(lod.Sections);
         }
 
-        // Insert padding bytes into each section
-        var padBytes = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 };
-
+        // Insert padding bytes into each StaticMeshSection
+        var padBytes = game == EGame.GAME_Grounded
+            ? new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }
+            : new byte[] { 1, 0, 0, 0 };
+        
         var uexpBytes = uexp.Bytes.ToList();
 
         for (var i = 0; i < staticMeshSections.Count; i++)
         {
-            var insertionOffset = (int)(staticMeshSections[i].GroundedDataOffset + i * padBytes.Length);
+            var staticMeshSection = staticMeshSections[i];
+            
+            var insertionOffset = game == EGame.GAME_Grounded
+                ? (int)staticMeshSection.OffsetOfPaddingForGrounded1
+                : (int)staticMeshSection.OffsetOfPaddingForGrounded2;
+            
+            // Remember to shift the offset by the number of bytes already inserted
+            insertionOffset += i * padBytes.Length;
             
             uexpBytes.InsertRange(insertionOffset, padBytes);
         }
@@ -117,7 +139,7 @@ public class Program
         WriteLong(uassetBytes, (int)mainExport.OffsetOfSerialSize, newSerialSize);
 
         // Update export table with new offsets for any subsequent exports
-        for (var i = staticMeshExportIndex + 1; i < package.ExportMap.Length; i++)
+        for (var i = staticMeshExportIndex + 1; i < package.ExportMapLength; i++)
         {
             var objectExport = package.ExportMap[i];
             var serialOffset = objectExport.SerialOffset;
